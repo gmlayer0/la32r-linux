@@ -1,27 +1,46 @@
 /dts-v1/;
 /{
-        model = "loongson,generic";
-        compatible = "loongson,loongson3";
-        #address-cells = <1>;
-        #size-cells = <1>;
+    model = "loongson,generic";
+    compatible = "loongson,loongson3";
+    #address-cells = <1>;
+    #size-cells = <1>;
 
-        aliases {
-                serial0 = &cpu_uart0;
-        };
+    aliases {
+        serial0 = &cpu_uart0;
+        mmc0 = &sdhci0;
+    };
 
-        chosen {
-                stdout-path = "serial0:115200n8";
-                bootargs = "earlycon";
-        };
+    chosen {
+        stdout-path = "serial0:115200n8";
+        bootargs = "earlycon";
+    };
 
     memory {
         name = "memory";
         device_type = "memory";
         reg =  <0x00000000  0x08000000>;
-        };
+    };
+
+	socclk: socclk0 {
+		compatible = "fixed-clock";
+		clock-frequency = <33000000>;
+		#clock-cells = <0>;
+	};
+
+	clk_ahb: socclk1 {
+		compatible = "fixed-clock";
+		clock-frequency = <33000000>;
+		#clock-cells = <0>;
+	};
+	clk_xin: socclk2 {
+		compatible = "fixed-clock";
+		clock-frequency = <33000000>;
+		#clock-cells = <0>;
+	};
+
 
 	cpuic: interrupt-controller {
-	compatible = "loongson,cpu-interrupt-controller";
+	    compatible = "loongson,cpu-interrupt-controller";
         interrupt-controller;
 		#interrupt-cells = <1>;
 	};
@@ -33,25 +52,22 @@
 		ranges = <0x10000000 0x10000000 0x10000000 >;
 
         cpu_uart0: serial@0x1fe001e0 {
-                        compatible = "ns16550a";
-                        reg = < 0x1fe001e0  0x10>;
-                        clock-frequency = <33000000>;
-                        interrupt-parent = <&cpuic>;
-                        interrupts = <2>;
-                        no-loopback-test;
-                };
-
-        
-#if 0
-            ahci@0x1fe30000{
-                compatible = "snps,spear-ahci";
-                reg = <0x1fe30000 0x10000>;
-                interrupt-parent = <&cpuic>;
-                interrupts = <4>;
-                dma-mask = <0x0 0xffffffff>;
-            };
-#endif
+            compatible = "ns16550a";
+            reg = < 0x1fe001e0  0x10>;
+            clock-frequency = <33000000>;
+            interrupt-parent = <&cpuic>;
+            interrupts = <2>;
+            no-loopback-test;
         };
 
+        sdhci0: mmc@0x1fd01000 {
+            compatible = "arasan,sdhci-8.9a";
+            reg = <0x1fd01000 0x100>;
+			clock-names = "clk_xin", "clk_ahb";
+			clocks = <&clk_xin>, <&clk_ahb>;
+            interrupt-parent = <&cpuic>;
+            interrupts = <4>;
+        };
+    };
 };
 
